@@ -2,7 +2,7 @@ import { parseArgs } from 'node:util'
 import { loadConfig, shouldRunToday, type CollectorName } from './config.ts'
 import type { Collector, RawJob } from './collectors/index.ts'
 import { remotive } from './collectors/remotive.ts'
-import { arbeitnow } from './collectors/arbeitnow.ts'
+// import { arbeitnow } from './collectors/arbeitnow.ts' // disabled: 개발자 공고 12%, API 필터 미지원
 import { adzuna } from './collectors/adzuna.ts'
 import { jsearch } from './collectors/jsearch.ts'
 import { hn } from './collectors/hn.ts'
@@ -13,7 +13,7 @@ import { notifyFailure } from './notifier/failure.ts'
 
 const REGISTRY: Partial<Record<CollectorName, Collector>> = {
   remotive,
-  arbeitnow,
+  // arbeitnow, // disabled
   adzuna,
   jsearch,
   hn_who_is_hiring: hn,

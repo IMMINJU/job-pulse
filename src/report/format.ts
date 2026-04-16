@@ -71,6 +71,6 @@ export function buildReportMessage(agg: WeeklyAggregate, insightText: string): R
       { heading: 'New tags', body: tagLines.join('\n') },
       { heading: 'Insight', body: insightText },
     ],
-    footer: 'Sources: Remotive, Arbeitnow, Adzuna, JSearch, Hacker News "Who is Hiring"',
+    footer: 'Sources: Remotive, Adzuna, JSearch, Hacker News "Who is Hiring"',
   }
 }

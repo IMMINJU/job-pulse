@@ -6,10 +6,10 @@ GitHub Actions cron 4개. 모두 UTC 기준.
 
 | 워크플로 | cron | 대상 |
 |---|---|---|
-| `collect-daily.yml` | `0 2 * * *` | remotive, arbeitnow |
+| `collect-daily.yml` | `0 2 * * *` | remotive |
 | `collect-weekly.yml` | `0 2 * * 1` / `0 2 * * 4` | mon: adzuna + jsearch / thu: adzuna |
 | `collect-monthly.yml` | `0 2 1 * *` | hn (매월 1일) |
-| `report.yml` | `0 9 * * 1` | 주간 리포트 (월 09:00 UTC) |
+| `report.yml` | `0 1 * * 1` | 주간 리포트 (월 01:00 UTC / KST 10:00) |
 
 각 워크플로는 `workflow_dispatch`도 열려 있어 수동 실행 가능. `report.yml`은 `dry_run` 입력 지원.
 

@@ -16,8 +16,8 @@ job-pulse는 **대시보드 없는 Chat-first 배치 파이프라인**이다. �
 
 ```
 [daily 02:00 UTC]                  [mon,thu 02:00 UTC]          [mon 02:00 UTC]
-  remotive  ─┐                      adzuna ─┐                    jsearch ─┐
-  arbeitnow ─┤  → normalize          (per segment × country)      (per segment)
+  remotive ──┤  → normalize          adzuna ─┐                    jsearch ─┐
+             │      ├─ title/tags     (per segment × country)      (per segment)
              │      ├─ title/tags 매칭 → segment 라벨링           → segment 라벨링
              ▼      ▼                      │                             │
           job_postings_raw (UNIQUE: source, external_id) ←───────────────┘

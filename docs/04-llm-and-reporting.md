@@ -80,7 +80,7 @@ buildReportMessage(agg, insightText)
   ├─ sections: Segments / Top movers / New tags / Insight
   ├─ sparkline (▁▂▃▄▅▆▇█ 8단계)
   ├─ arrow (↑ ↓ → —, |%|<1은 →)
-  └─ footer: 'Sources: Remotive, Arbeitnow, Adzuna, JSearch, Hacker News "Who is Hiring"'
+  └─ footer: 'Sources: Remotive, Adzuna, JSearch, Hacker News "Who is Hiring"'
 ```
 
 ## Report 메시지 모델
@@ -128,7 +128,7 @@ Developer Hiring Weekly (4/7 – 4/13)
 
 Weekly hiring summary, UTC Mon-Sun. 7123 postings tracked across 2 source groups.
 
-Global (Remotive + Arbeitnow + JSearch + HN)
+Global (Remotive + JSearch + HN)
 frontend      684   ↓ 5%     ▁▃▅▄▂▃▄
 backend       812   ↑ 3%     ▂▃▃▄▅▅▆
 ai            287   ↑ 47%    ▁▂▂▃▅▇█
@@ -136,7 +136,7 @@ devops        223   →        ▃▃▄▄▃▄▃
 mobile        151   ↓ 8%     ▄▄▃▃▂▂▂
 data          224   ↑ 2%     ▃▃▄▄▄▃▄
 
-Global (Remotive + Arbeitnow + JSearch + HN) · top movers
+Global (Remotive + JSearch + HN) · top movers
   · ai ↑ 47%  (prev 195)
   · frontend ↓ 5%  (prev 720)
 
@@ -159,7 +159,7 @@ New tags
 Insight
 This week, AI engineering roles continue their sharp climb...
 
-Sources: Remotive, Arbeitnow, Adzuna, JSearch, Hacker News "Who is Hiring"
+Sources: Remotive, Adzuna, JSearch, Hacker News "Who is Hiring"
 ```
 
 두 버킷으로 분리된 이유는 Adzuna가 3국가 × 6세그먼트로 호출되어 같은 다국적 공고가 여러 번 카운트되기 때문. 합산하면 값이 부풀려지므로 `global` 버킷(단일 수집 소스들) 옆에 `adzuna` 버킷을 나란히 표기해 해석을 독자에게 넘긴다.
@@ -217,10 +217,10 @@ Sources: Remotive, Arbeitnow, Adzuna, JSearch, Hacker News "Who is Hiring"
 
 ### [E-8][MAJOR] 소스 attribution
 
-- **Why**: Remotive/Arbeitnow TOS 요구. 빠지면 차단 사유.
-- **Check**: (자동) `format.ts`가 반환하는 `message.footer`에 "Remotive", "Arbeitnow", "Adzuna", "JSearch", "Hacker News" 모두 포함.
+- **Why**: Remotive TOS 요구. 빠지면 차단 사유.
+- **Check**: (자동) `format.ts`가 반환하는 `message.footer`에 "Remotive", "Adzuna", "JSearch", "Hacker News" 포함. (Arbeitnow 비활성이라 제외 OK.)
 - **Scope**: `src/report/format.ts`
-- **Source**: Remotive/Arbeitnow TOS, `B-6`
+- **Source**: Remotive TOS, `B-6`
 
 ### [E-9][MAJOR] 버킷 분리 표기
 

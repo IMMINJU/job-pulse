@@ -38,7 +38,7 @@ interface Collector {
 | 소스 그룹 | 방식 |
 |---|---|
 | Adzuna, JSearch | `segments[].query`로 **세그먼트별 쿼리** → 결과 전체를 해당 세그먼트로 라벨링 |
-| Remotive, Arbeitnow, HN | 한 번 **전량 수집** → `segments[].keywords`로 `title`/`tags` 단어 경계 매칭 → **매칭 수가 가장 많은** 세그먼트 |
+| Remotive, HN | 한 번 **전량 수집** → `segments[].keywords`로 `title`/`tags` 단어 경계 매칭 → **매칭 수가 가장 많은** 세그먼트 |
 
 - 매처(`src/segment/match.ts`)는 `(?<![a-z0-9])kw(?![a-z0-9])` 정규식. `ai`가 `chains`에 오탐되지 않음. 공백·하이픈 포함 키워드(`"front-end"`, `"machine learning"`)도 그대로 지원
 - 동점 세그먼트는 `config.yml`의 순서가 이김
@@ -53,11 +53,12 @@ interface Collector {
 - 리모트 전용. `remote: true` 고정
 - 재배포 금지 — 집계·통계만 Chat으로 보내며 개별 공고 URL은 노출하지 않음
 
-### Arbeitnow (`src/collectors/arbeitnow.ts`)
+### Arbeitnow (`src/collectors/arbeitnow.ts`) — 비활성
+
+> config.yml에서 `enabled: false`. 개발자 공고 비율 12%로 낮고 API에 카테고리 필터가 없어 unassigned 88% 발생. 재활성화하려면 config만 변경.
 
 - `https://www.arbeitnow.com/api/job-board-api` — 무인증, 페이지네이션
 - 100건/페이지, 최근 생성 순. 최근 7일 cutoff로 페이지 돌다가 중단 (MAX_PAGES=5 안전장치)
-- 독일/유럽 비개발자 공고 섞임 → `__unassigned__` 비율 높게 나올 수 있음
 
 ### Adzuna (`src/collectors/adzuna.ts`)
 
@@ -86,16 +87,16 @@ interface Collector {
 | 소스 | 한도 | 사용 | 여유 |
 |---|---|---|---|
 | Remotive | 무제한 (일 4회 권장) | 일 1회 | 안전 |
-| Arbeitnow | 무제한 (링크백 권장) | 일 1회, 최대 5페이지 | 안전 |
+| ~~Arbeitnow~~ | ~~무제한~~ | ~~비활성~~ | — |
 | Adzuna | ~1,000/월 | 6 × 3 × 2/주 × 4.3주 ≈ 155/월 | 84% 여유 |
 | JSearch | 200/월 | 6 × 4.3 ≈ 26/월 | 87% 여유 |
 | HN | 무제한 | 월 1회, ~500 댓글 fetch | 안전 |
 
 ## Compliance (외부 API TOS)
 
-- **Remotive**: 출처 표기 필수 → 리포트 footer `Sources: Remotive, Arbeitnow, Adzuna, JSearch, HN` 자동 포함
+- **Remotive**: 출처 표기 필수 → 리포트 footer `Sources: Remotive, Adzuna, JSearch, HN` 자동 포함
 - **Remotive**: 3자 플랫폼 재배포 금지 → 집계만 전송, 개별 공고 URL 노출 금지
-- **Arbeitnow**: 링크백 권장 → 위와 동일 footer로 충족
+- **Arbeitnow**: 비활성. 재활성화 시 링크백 필요
 - **Adzuna**: `app_id` 유출 금지 → GitHub secrets로만 관리, `.env.example`에 빈 값
 - **HN Firebase API**: 무제한이지만 과도한 병렬 호출 회피 (batch 20)
 
@@ -119,7 +120,7 @@ interface Collector {
 - **Why**: 무인증 API(Remotive 등)는 identifiable UA 없으면 차단·rate limit 가능. TOS에 명시됨.
 - **Check**: (자동) 모든 `fetch(` 호출에 `user-agent` 헤더가 붙어 있다. 정규식으로 확인.
 - **Scope**: `src/collectors/**/*.ts`
-- **Source**: `SONAR`(Reliability), Remotive/Arbeitnow TOS
+- **Source**: `SONAR`(Reliability), Remotive TOS
 
 ### [B-3][BLOCK] externalId 유일성
 
@@ -138,7 +139,7 @@ interface Collector {
 ### [B-5][MAJOR] 세그먼트 할당 방식 분리
 
 - **Why**: 쿼터 있는 소스(Adzuna/JSearch)는 쿼리 단계 라벨링, 무쿼터는 `matchSegment`. 혼용하면 분포가 왜곡.
-- **Check**: (에이전트) Adzuna/JSearch collector는 `segment: segment.key`로 직접 할당 (matchSegment 호출 X). Remotive/Arbeitnow/HN는 `matchSegment()`를 호출.
+- **Check**: (에이전트) Adzuna/JSearch collector는 `segment: segment.key`로 직접 할당 (matchSegment 호출 X). Remotive/HN는 `matchSegment()`를 호출. (Arbeitnow 비활성이지만 코드는 matchSegment 사용.)
 - **Scope**: `src/collectors/*.ts`
 - **Source**: ADR
 

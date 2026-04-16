@@ -2,7 +2,7 @@ name: report-weekly
 
 on:
   schedule:
-    - cron: "0 9 * * 1"   # mon 09:00 UTC
+    - cron: "0 1 * * 1"   # mon 01:00 UTC (KST 10:00)
   workflow_dispatch:
     inputs:
       dry_run:

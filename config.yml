@@ -23,7 +23,7 @@ collectors:
     enabled: true
     schedule: daily
   arbeitnow:
-    enabled: true
+    enabled: false       # 개발자 공고 12%뿐, Remotive가 리모트 커버. API 필터 미지원.
     schedule: daily
   adzuna:
     enabled: true

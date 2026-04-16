@@ -48,11 +48,11 @@ export interface WeeklyAggregate {
 // Adzuna is counted separately because country × segment loops cause cross-country duplication
 // when summed globally. Non-Adzuna sources are remote-only or single-query so their segment
 // counts are genuinely disjoint.
-const GLOBAL_SOURCES: readonly Source[] = ['remotive', 'arbeitnow', 'jsearch', 'hn']
+const GLOBAL_SOURCES: readonly Source[] = ['remotive', 'jsearch', 'hn']
 const ADZUNA_SOURCES: readonly Source[] = ['adzuna']
 
 const BUCKETS: Array<{ key: string; label: string; sources: readonly Source[] }> = [
-  { key: 'global', label: 'Global (Remotive + Arbeitnow + JSearch + HN)', sources: GLOBAL_SOURCES },
+  { key: 'global', label: 'Global (Remotive + JSearch + HN)', sources: GLOBAL_SOURCES },
   { key: 'adzuna', label: 'Adzuna (3-country aggregate)', sources: ADZUNA_SOURCES },
 ]
 

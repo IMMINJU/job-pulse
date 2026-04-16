@@ -15,7 +15,6 @@
 | 소스 | 인증 | 쿼터 | 수집 주기 | 세그먼트 전략 |
 |---|---|---|---|---|
 | Remotive | 없음 | 무제한 | daily | 전량 수집 후 키워드 매칭 |
-| Arbeitnow | 없음 | 무제한 | daily | 전량 수집 후 키워드 매칭 |
 | Adzuna | app_id + app_key | ~1,000/월 | 월·목 (주 2회) | 세그먼트별 쿼리 (6 × 국가 × 2회) |
 | JSearch (RapidAPI) | API Key | 200/월 | 월요일 (주 1회) | 세그먼트별 쿼리 (6 × 1회) |
 | Hacker News "Who is Hiring" | 없음 | 무제한 | 월 1회 (매월 1일) | LLM 파싱 후 키워드 매칭 |
@@ -49,7 +48,7 @@ npm run report              # 리포트 미리보기 (dry run)
 ```
 Developer Hiring Weekly (4/7 – 4/13)
 
-Global (Remotive + Arbeitnow + JSearch + HN)
+Global (Remotive + JSearch + HN)
 frontend      684   ↓ 5%     ▁▃▅▄▂▃▄
 backend       812   ↑ 3%     ▂▃▃▄▅▅▆
 ai            287   ↑ 47%    ▁▂▂▃▅▇█
@@ -69,5 +68,5 @@ Insight
 This week, AI engineering roles continue their sharp climb,
 with "ai agent" emerging as a distinct category...
 
-Sources: Remotive, Arbeitnow, Adzuna, JSearch, Hacker News "Who is Hiring"
+Sources: Remotive, Adzuna, JSearch, Hacker News "Who is Hiring"
 ```

@@ -1,0 +1,28 @@
+name: report-weekly
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # mon 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: print only, do not send
+        type: boolean
+        default: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+      FAILURE_WEBHOOK_URL: ${{ secrets.FAILURE_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run report ${{ inputs.dry_run && '' || '-- --send' }}

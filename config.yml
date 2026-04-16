@@ -1,0 +1,46 @@
+segments:
+  - key: frontend
+    query: "frontend developer"
+    keywords: [frontend, front-end, react, vue, svelte, nextjs]
+  - key: backend
+    query: "backend developer"
+    keywords: [backend, back-end, api, nodejs, golang, rails, django]
+  - key: ai
+    query: "AI engineer"
+    keywords: [ai, ml, llm, "machine learning", "ai engineer", prompt]
+  - key: devops
+    query: "devops engineer"
+    keywords: [devops, sre, platform, kubernetes, terraform]
+  - key: mobile
+    query: "mobile developer"
+    keywords: [ios, android, "react native", flutter, swift, kotlin]
+  - key: data
+    query: "data engineer"
+    keywords: [data, analytics, spark, airflow, dbt, snowflake]
+
+collectors:
+  remotive:
+    enabled: true
+    schedule: daily
+  arbeitnow:
+    enabled: true
+    schedule: daily
+  adzuna:
+    enabled: true
+    schedule: "mon,thu"
+    countries: [us, gb, de]
+  jsearch:
+    enabled: true
+    schedule: mon
+  hn_who_is_hiring:
+    enabled: true
+    schedule: "monthly:1"
+
+report:
+  week_boundary: utc
+  new_tag:
+    min_count: 5
+
+notifier:
+  type: google_chat
+  webhook_url_env: GOOGLE_CHAT_WEBHOOK_URL

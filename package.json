@@ -1,0 +1,27 @@
+{
+  "name": "job-pulse",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "collect": "node --env-file-if-exists=.env --import tsx src/collect.ts",
+    "report": "node --env-file-if-exists=.env --import tsx src/report.ts",
+    "migrate": "node --env-file-if-exists=.env --import tsx src/db/migrate.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "js-yaml": "^4.1.1",
+    "openai": "^6.34.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

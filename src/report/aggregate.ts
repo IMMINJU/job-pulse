@@ -112,7 +112,9 @@ export async function buildWeeklyAggregate(
   now: Date,
   opts: { newTagMinCount: number; segments: string[] },
 ): Promise<WeeklyAggregate> {
-  const ws = weekStartUTC(now)
+  // Report the just-completed week (Mon–Sun). Running on Monday summarizes the
+  // previous calendar week, not the one that started a few hours ago.
+  const ws = addDaysUTC(weekStartUTC(now), -7)
   const prevStart = addDaysUTC(ws, -7)
   const thisEnd = addDaysUTC(ws, 6)
   const prevEnd = addDaysUTC(prevStart, 6)

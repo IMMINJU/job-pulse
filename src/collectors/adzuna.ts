@@ -24,6 +24,8 @@ const AdzunaResponseSchema = z.object({
 })
 
 const PAGE_SIZE = 50 // max per Adzuna docs
+// 6 segs × 3 countries × 2 runs/week × 3 pages × 4.3 weeks ≈ 465 calls/month vs 1,000 quota.
+const MAX_PAGES = 3
 
 function requireEnv(name: string): string {
   const v = process.env[name]
@@ -43,40 +45,44 @@ export const adzuna: Collector = {
     const out: RawJob[] = []
     for (const country of countries) {
       for (const segment of ctx.segments) {
-        const url = new URL(`https://api.adzuna.com/v1/api/jobs/${country}/search/1`)
-        url.searchParams.set('app_id', appId)
-        url.searchParams.set('app_key', appKey)
-        url.searchParams.set('what', segment.query)
-        url.searchParams.set('results_per_page', String(PAGE_SIZE))
-        url.searchParams.set('content-type', 'application/json')
-        url.searchParams.set('max_days_old', '7')
+        for (let page = 1; page <= MAX_PAGES; page++) {
+          const url = new URL(`https://api.adzuna.com/v1/api/jobs/${country}/search/${page}`)
+          url.searchParams.set('app_id', appId)
+          url.searchParams.set('app_key', appKey)
+          url.searchParams.set('what', segment.query)
+          url.searchParams.set('results_per_page', String(PAGE_SIZE))
+          url.searchParams.set('content-type', 'application/json')
+          url.searchParams.set('max_days_old', '7')
 
-        const res = await fetch(url, {
-          headers: {
-            accept: 'application/json',
-            'user-agent': 'job-pulse/0.1 (+https://github.com/IMMINJU/job-pulse)',
-          },
-        })
-        if (res.status === 404) {
-          console.warn(`[adzuna] ${country}/${segment.key} 404 — country may not be supported, skipping`)
-          continue
-        }
-        if (!res.ok) throw new Error(`adzuna ${country}/${segment.key} ${res.status} ${res.statusText}`)
-        const body = AdzunaResponseSchema.parse(await res.json())
-
-        for (const j of body.results) {
-          out.push({
-            source: 'adzuna',
-            externalId: `${country}:${j.id}`,
-            postedAt: j.created ? new Date(j.created) : null,
-            title: j.title,
-            company: j.company?.display_name ?? null,
-            location: j.location?.display_name ?? null,
-            remote: null,
-            tags: j.category?.tag ? [j.category.tag] : null,
-            segment: segment.key,
-            raw: { country, count: body.count, job: j },
+          const res = await fetch(url, {
+            headers: {
+              accept: 'application/json',
+              'user-agent': 'job-pulse/0.1 (+https://github.com/IMMINJU/job-pulse)',
+            },
           })
+          if (res.status === 404) {
+            console.warn(`[adzuna] ${country}/${segment.key} p${page} 404 — country may not be supported, skipping`)
+            break
+          }
+          if (!res.ok) throw new Error(`adzuna ${country}/${segment.key} p${page} ${res.status} ${res.statusText}`)
+          const body = AdzunaResponseSchema.parse(await res.json())
+
+          for (const j of body.results) {
+            out.push({
+              source: 'adzuna',
+              externalId: `${country}:${j.id}`,
+              postedAt: j.created ? new Date(j.created) : null,
+              title: j.title,
+              company: j.company?.display_name ?? null,
+              location: j.location?.display_name ?? null,
+              remote: null,
+              tags: j.category?.tag ? [j.category.tag] : null,
+              segment: segment.key,
+              raw: { country, count: body.count, page, job: j },
+            })
+          }
+
+          if (body.results.length < PAGE_SIZE) break
         }
       }
     }

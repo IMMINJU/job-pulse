@@ -62,9 +62,9 @@ interface Collector {
 
 ### Adzuna (`src/collectors/adzuna.ts`)
 
-- `https://api.adzuna.com/v1/api/jobs/{country}/search/1` — `app_id` + `app_key`
-- `country × segment` 루프 (us/gb/de × 6 = 18콜)
-- `max_days_old=7`, `results_per_page=50`
+- `https://api.adzuna.com/v1/api/jobs/{country}/search/{page}` — `app_id` + `app_key`
+- `country × segment × page` 3중 루프. `MAX_PAGES=3` 하드코딩, `results.length < PAGE_SIZE`면 조기 종료
+- `max_days_old=7`, `results_per_page=50` → 세그먼트/국가당 최대 150건
 - **중복 처리**: 같은 회사·직무가 여러 국가에 나올 수 있어 `external_id`에 `country:` prefix. 리포트는 `global`(비-Adzuna) / `adzuna` 두 버킷으로 **분리 표기**해 교차 합산을 피함 (`src/report/aggregate.ts`의 `BUCKETS`)
 
 ### JSearch (`src/collectors/jsearch.ts`)
@@ -88,7 +88,7 @@ interface Collector {
 |---|---|---|---|
 | Remotive | 무제한 (일 4회 권장) | 일 1회 | 안전 |
 | ~~Arbeitnow~~ | ~~무제한~~ | ~~비활성~~ | — |
-| Adzuna | ~1,000/월 | 6 × 3 × 2/주 × 4.3주 ≈ 155/월 | 84% 여유 |
+| Adzuna | ~1,000/월 | 6 × 3 × 2/주 × 3페이지 × 4.3주 ≈ 465/월 | 53% 여유 |
 | JSearch | 200/월 | 6 × 4.3 ≈ 26/월 | 87% 여유 |
 | HN | 무제한 | 월 1회, ~500 댓글 fetch | 안전 |
 
@@ -132,7 +132,7 @@ interface Collector {
 ### [B-4][BLOCK] 쿼터 예산 준수
 
 - **Why**: API 한도 초과는 즉시 차단되고 다음 달까지 복구 불가.
-- **Check**: (에이전트) Adzuna 호출 = `countries.length × segments.length × 스케줄 주당 횟수 × 4.3 ≤ 1,000/월`. JSearch 호출 = `segments.length × 스케줄 주당 횟수 × 4.3 ≤ 200/월`. 현재 config와 코드 결합으로 계산.
+- **Check**: (에이전트) Adzuna 호출 = `countries.length × segments.length × MAX_PAGES × 스케줄 주당 횟수 × 4.3 ≤ 1,000/월`. JSearch 호출 = `segments.length × 스케줄 주당 횟수 × 4.3 ≤ 200/월`. 현재 config와 코드 결합으로 계산.
 - **Scope**: `src/collectors/adzuna.ts`, `src/collectors/jsearch.ts`, `config.yml`
 - **Source**: API TOS, `12F`(Disposability)
 

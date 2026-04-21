@@ -9,7 +9,7 @@ GitHub Actions cron 4개. 모두 UTC 기준.
 | `collect-daily.yml` | `0 2 * * *` | remotive |
 | `collect-weekly.yml` | `0 2 * * 1` / `0 2 * * 4` | mon: adzuna + jsearch / thu: adzuna |
 | `collect-monthly.yml` | `0 2 1 * *` | hn (매월 1일) |
-| `report.yml` | `0 1 * * 1` | 주간 리포트 (월 01:00 UTC / KST 10:00) |
+| `report.yml` | `0 3 * * 1` | 주간 리포트 (월 03:00 UTC / KST 12:00, collect-weekly 이후) |
 
 각 워크플로는 `workflow_dispatch`도 열려 있어 수동 실행 가능. `report.yml`은 `dry_run` 입력 지원.
 
@@ -26,7 +26,7 @@ GitHub Actions cron 4개. 모두 UTC 기준.
 ## 멱등성
 
 - `job_postings_raw`: `UNIQUE (source, external_id)` + `ON CONFLICT DO NOTHING` → 같은 날 여러 번 돌아도 중복 없음
-- `job_snapshots`: `ON CONFLICT (date, source, segment) DO UPDATE SET count = EXCLUDED.count` → 재실행하면 **덮어쓰기** (단조 증가가 아닌 최신값 반영)
+- `job_snapshots`: `ON CONFLICT (date, source, segment) DO UPDATE SET count = existing + incoming` → **누적**. count는 "posted_at 기준 그 날 첫 등장한 공고 수"이고, 재실행 시 raw의 `ON CONFLICT DO NOTHING`이 중복을 먼저 걸러주므로 0이 더해져 값이 안정
 - `report_runs`: `UNIQUE (week_start)` + `ON CONFLICT DO UPDATE` → 주당 1건. `sent=true`면 `--force` 없이 재전송 차단
 
 ## 재시도

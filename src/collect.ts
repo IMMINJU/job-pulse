@@ -7,7 +7,7 @@ import { adzuna } from './collectors/adzuna.ts'
 import { jsearch } from './collectors/jsearch.ts'
 import { hn } from './collectors/hn.ts'
 import { insertRawJobs, upsertSnapshots } from './db/queries.ts'
-import type { JobPostingRawInsert, JobSnapshotRow, Source } from './db/types.ts'
+import type { InsertedRawRef, JobPostingRawInsert, JobSnapshotRow } from './db/types.ts'
 import { UNASSIGNED_SEGMENT } from './db/types.ts'
 import { notifyFailure } from './notifier/failure.ts'
 
@@ -35,18 +35,19 @@ function toInsert(j: RawJob, now: Date): JobPostingRawInsert {
   }
 }
 
-function buildSnapshots(jobs: RawJob[], fetchedAt: Date): JobSnapshotRow[] {
-  const date = fetchedAt.toISOString().slice(0, 10)
-  const counts = new Map<string, number>()
-  for (const j of jobs) {
-    const seg = j.segment ?? UNASSIGNED_SEGMENT
-    const key = `${j.source}\u0001${seg}`
-    counts.set(key, (counts.get(key) ?? 0) + 1)
-  }
+// Snapshots count *new* postings per (posted_at date, source, segment). posted_at
+// anchors the row to when the job was listed, not when our cron happened to run.
+function buildSnapshots(inserted: InsertedRawRef[]): JobSnapshotRow[] {
   const rows: JobSnapshotRow[] = []
-  for (const [key, count] of counts) {
-    const [source, segment] = key.split('\u0001') as [Source, string]
-    rows.push({ date, source, segment, count })
+  for (const r of inserted) {
+    const anchor = r.posted_at ?? r.fetched_at
+    const date = anchor.toISOString().slice(0, 10)
+    const segment = r.segment ?? UNASSIGNED_SEGMENT
+    const existing = rows.find(
+      (x) => x.date === date && x.source === r.source && x.segment === segment,
+    )
+    if (existing) existing.count += 1
+    else rows.push({ date, source: r.source, segment, count: 1 })
   }
   return rows
 }
@@ -58,10 +59,10 @@ async function runOne(
 ): Promise<{ fetched: number; inserted: number }> {
   const jobs = await collector.collect(ctx)
   const inserts = jobs.map((j) => toInsert(j, ctx.now))
-  const inserted = await insertRawJobs(inserts)
-  await upsertSnapshots(buildSnapshots(jobs, ctx.now))
-  console.log(`[${name}] fetched=${jobs.length} inserted=${inserted}`)
-  return { fetched: jobs.length, inserted }
+  const insertedRefs = await insertRawJobs(inserts)
+  await upsertSnapshots(buildSnapshots(insertedRefs))
+  console.log(`[${name}] fetched=${jobs.length} inserted=${insertedRefs.length}`)
+  return { fetched: jobs.length, inserted: insertedRefs.length }
 }
 
 async function main() {

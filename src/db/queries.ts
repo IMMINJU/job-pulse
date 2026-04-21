@@ -1,5 +1,6 @@
 import { sql } from './index.ts'
 import type {
+  InsertedRawRef,
   JobPostingRawInsert,
   JobSnapshotRow,
   ReportRunRow,
@@ -11,9 +12,9 @@ import type {
 // returns Record<string, unknown>[] for raw SELECTs; each SELECT's projection
 // is manually kept in sync with the target row type declared in ./types.ts.
 
-export async function insertRawJobs(rows: JobPostingRawInsert[]): Promise<number> {
-  if (rows.length === 0) return 0
-  let inserted = 0
+export async function insertRawJobs(rows: JobPostingRawInsert[]): Promise<InsertedRawRef[]> {
+  if (rows.length === 0) return []
+  const inserted: InsertedRawRef[] = []
   for (const r of rows) {
     const result = await sql`
       INSERT INTO job_postings_raw (
@@ -29,18 +30,28 @@ export async function insertRawJobs(rows: JobPostingRawInsert[]): Promise<number
       ON CONFLICT (source, external_id) DO NOTHING
       RETURNING id
     `
-    inserted += result.length
+    if (result.length > 0) {
+      inserted.push({
+        source: r.source,
+        segment: r.segment ?? null,
+        posted_at: r.posted_at ?? null,
+        fetched_at: r.fetched_at,
+      })
+    }
   }
   return inserted
 }
 
+// Accumulate on conflict: snapshot rows tally *new* postings inserted per
+// (date, source, segment). Duplicate postings are already filtered upstream by
+// job_postings_raw's ON CONFLICT DO NOTHING, so re-runs contribute 0 and the sum stays correct.
 export async function upsertSnapshots(rows: JobSnapshotRow[]): Promise<void> {
   for (const r of rows) {
     await sql`
       INSERT INTO job_snapshots (date, source, segment, count)
       VALUES (${r.date}, ${r.source}, ${r.segment}, ${r.count})
       ON CONFLICT (date, source, segment) DO UPDATE
-        SET count = EXCLUDED.count
+        SET count = job_snapshots.count + EXCLUDED.count
     `
   }
 }

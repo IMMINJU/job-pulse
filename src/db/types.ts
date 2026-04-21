@@ -31,6 +31,13 @@ export interface JobPostingRawInsert {
   raw_json: unknown
 }
 
+export interface InsertedRawRef {
+  source: Source
+  segment: string | null
+  posted_at: Date | null
+  fetched_at: Date
+}
+
 export interface JobSnapshotRow {
   date: string // YYYY-MM-DD
   source: Source

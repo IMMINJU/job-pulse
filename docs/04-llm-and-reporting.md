@@ -67,8 +67,8 @@ USER:   Weekly hiring data (JSON). Write one insight paragraph.
 
 ```
 buildWeeklyAggregate(now, { newTagMinCount, segments })
-  ├─ weekStartUTC(now)       — UTC 월요일 00:00
-  ├─ getSnapshotsInRange     — 이번 주 + 전주
+  ├─ weekStartUTC(now) - 7일  — 집계 대상은 '막 끝난 주'
+  ├─ getSnapshotsInRange     — 이번 주 + 전주 (job_snapshots.count = posted_at 기준 신규 공고 수)
   ├─ sumDailyBySegment       — 세그먼트별 7일 배열
   ├─ changePct 계산          — prevTotal>=10인 경우만 top mover 후보
   └─ getNewTagsSince         — first_seen>=weekStart AND total_count>=min
